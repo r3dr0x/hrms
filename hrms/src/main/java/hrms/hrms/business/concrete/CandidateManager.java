@@ -1,103 +1,81 @@
 package hrms.hrms.business.concrete;
 
-import java.time.LocalDate;
-import java.util.List;
-
+import hrms.hrms.business.abstracts.CandidateService;
+import hrms.hrms.business.abstracts.EmailService;
+import hrms.hrms.business.concrete.checkHelper.UserCheckHelper;
+import hrms.hrms.business.constants.Messages;
+import hrms.hrms.business.validationRules.CandidateValidatorService;
+import hrms.hrms.core.adapters.UserCheckService;
+import hrms.hrms.core.utilities.business.BusinessEngine;
+import hrms.hrms.core.utilities.results.*;
+import hrms.hrms.dataAccess.abstracts.CandidateDao;
+import hrms.hrms.dataAccess.abstracts.UserDao;
+import hrms.hrms.entities.concretes.Candidate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import hrms.hrms.business.abstracts.CandidateService;
-import hrms.hrms.business.abstracts.EmailService;
-import hrms.hrms.core.adapters.UserCheckService;
-import hrms.hrms.core.utilities.results.DataResult;
-import hrms.hrms.core.utilities.results.ErrorResult;
-import hrms.hrms.core.utilities.results.Result;
-import hrms.hrms.core.utilities.results.SuccessDataResult;
-import hrms.hrms.core.utilities.results.SuccessResult;
-import hrms.hrms.dataAccess.abstracts.CandidateDao;
-import hrms.hrms.entities.concretes.Candidate;
-import hrms.hrms.business.concrete.checkHelper.CandidateCheckHelper;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
-public class CandidateManager implements CandidateService{
-	
-	
-    private final CandidateDao candidateDao;
+public class CandidateManager extends UserManager<Candidate> implements CandidateService  {
+
+    private final CandidateDao candidateUserDao;
+    private final CandidateValidatorService candidateUserValidatorService;
     private final UserCheckService userCheckService;
     private final EmailService emailService;
-	
+
     @Autowired
-    public CandidateManager(CandidateDao candidateUserDao, UserCheckService userCheckService, EmailService emailService) {
-        this.candidateDao = candidateUserDao;
+    public CandidateManager(UserDao<Candidate> userDao, CandidateValidatorService candidateUserValidatorService, UserCheckService userCheckService, EmailService emailService) {
+        super(userDao);
+        this.candidateUserDao = (CandidateDao) userDao;
+        this.candidateUserValidatorService = candidateUserValidatorService;
         this.userCheckService = userCheckService;
         this.emailService = emailService;
     }
-	
-	
-	
-	
-	
 
     @Override
     public DataResult<List<Candidate>> getAll() {
-        return new SuccessDataResult<>(this.candidateDao.findAll());
+        return new SuccessDataResult<>(this.candidateUserDao.findAll(), Messages.usersListed);
     }
 
     @Override
-    public DataResult<List<Candidate>> findByEmailIs(String email) {
-        return new SuccessDataResult<>(this.candidateDao.findByEmailIs(email));
+    public Result add(Candidate candidateUser) {
+        List<Result> results = new ArrayList<>();
+
+        results.add(BusinessEngine.run(this.checkUserRealOrNot(candidateUser.getIdentityNumber(), candidateUser.getFirstName(), candidateUser.getLastName(), candidateUser.getDateOfBirth())));
+        results.add(BusinessEngine.run(super.existsByEmail(candidateUser.getEmail())));
+        results.add(BusinessEngine.run(this.checkIdentityNumber(candidateUser.getIdentityNumber())));
+        results.add(BusinessEngine.run(this.candidateUserValidatorService.candidateUserCheckFields(candidateUser)));
+
+        Result result = UserCheckHelper.checkLogicResults(results);
+
+        if (!result.isSuccess()){
+            return new ErrorResult(result.getMessage());
+        }
+
+        this.candidateUserDao.save(candidateUser);
+        return new SuccessResult(this.emailService.sendEmail(candidateUser).getMessage());
     }
 
-    @Override
-    public DataResult<List<Candidate>> findByIdentityNumberIs(String identityNumber) {
-        return new SuccessDataResult<>(this.candidateDao.findByIdentityNumberIs(identityNumber));
+    public Result checkUserRealOrNot(String identityNumber, String firstName, String lastName, LocalDate dateOfBirthYear) {
+        var logic = this.userCheckService.checkIfRealPerson(identityNumber, firstName, lastName, dateOfBirthYear);
+
+        if (!logic){
+            return new ErrorResult(Messages.notRealPerson);
+        }
+
+        return new SuccessResult(Messages.validationSuccess);
     }
 
-    @Override
-    public DataResult<Boolean> checkIfRealPerson(String nationalityId, String firstName, String lastName, LocalDate dateOfBirthYear) {
-        return new DataResult<>(this.userCheckService.checkIfRealPerson(nationalityId, firstName, lastName, dateOfBirthYear), true);
+    public Result checkIdentityNumber(String identityNumber) {
+        var logic = this.candidateUserDao.existsByIdentityNumber(identityNumber);
+
+        if (logic){
+            return new ErrorResult(Messages.identityNumberExist);
+        }
+
+        return new SuccessResult(Messages.validationSuccess);
     }
-	
-
-
-
-
-
-
-
-	@Override
-	public Result add(Candidate candidate) {
-		var checkEmail = this.findByEmailIs(candidate.getEmail()).getData().size() != 0;
-		var checkIdentityNumber = this.findByIdentityNumberIs(candidate.getIdentityNumber()).getData().size() != 0;
-		var checkUserRealOrNot = !this.checkIfRealPerson(candidate.getIdentityNumber(), candidate.getFirstName(), candidate.getLastName(), candidate.getDateOfBirth()).getData();
-		var checkFields = !CandidateCheckHelper.allFieldsAreRequired(candidate);
-		
-		if (checkEmail || checkIdentityNumber || checkUserRealOrNot || checkFields) {
-			
-			String errorMessage = "";
-			
-			if (checkEmail || checkIdentityNumber ) {
-				errorMessage +=  "E - Posta Ya Da Kimlik Numaranız Zaten Mevcut";
-				
-			}
-			if(checkUserRealOrNot) {
-				errorMessage += "Bu Kullanıcı Gerçek Değil";
-				
-			}
-			if(checkFields) {
-				errorMessage += "Lütfen Tüm Alanları Doldurunuz";
-			}
-			
-			
-			return new ErrorResult(errorMessage);
-		}
-		
-		this.candidateDao.save(candidate);
-		return new SuccessResult(this.emailService.sendEmail(candidate).getMessage());
-
-	}
-	
-	
-	
-
 }

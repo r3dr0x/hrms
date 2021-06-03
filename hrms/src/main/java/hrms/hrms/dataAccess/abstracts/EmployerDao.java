@@ -1,13 +1,9 @@
 package hrms.hrms.dataAccess.abstracts;
 
-import java.util.List;
-
-import org.springframework.data.jpa.repository.JpaRepository;
+import hrms.hrms.entities.concretes.Employer;
 import org.springframework.stereotype.Repository;
 
-import hrms.hrms.entities.concretes.Employer;
-
 @Repository
-public interface EmployerDao extends JpaRepository<Employer ,Integer>{
-		List<Employer> findByEmailIs(String email);
+public interface EmployerDao extends UserDao<Employer> {
+
 }

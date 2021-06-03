@@ -26,28 +26,15 @@ public class CandidateController {
 			
 		}
 		
-		@GetMapping("/getall")
+		@GetMapping("/getAll")
 		public DataResult<List<Candidate>> getAll(){
 			return this.candidateService.getAll();
 		}
-		
-		@PostMapping("/findbyemailis")
-		public DataResult<List<Candidate>> findbyemailis(@RequestBody String email){
-			return this.candidateService.findByEmailIs(email.toLowerCase().trim());
-		}
-		
-		
-		@PostMapping("/findbyidentitynumberis")
-		public DataResult<List<Candidate>> findByIdentityNumberIs(@RequestBody String identitynumber){
-			return this.candidateService.findByIdentityNumberIs(identitynumber.trim());
-		}
-		
 		
 		@PostMapping("/add")
 		public Result add(@RequestBody Candidate candidate) {
 			return this.candidateService.add(candidate);
 		}
-		
 		
 		
 		

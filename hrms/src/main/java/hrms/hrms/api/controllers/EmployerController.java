@@ -2,6 +2,7 @@ package hrms.hrms.api.controllers;
 
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -18,28 +19,24 @@ import hrms.hrms.entities.concretes.Employer;
 @RequestMapping("/api/employer")
 public class EmployerController {
 	
-	private EmployerService employerService;
+	private final EmployerService employerService;
 
 	
-	
+	@Autowired
 	public EmployerController(EmployerService employerService) {
 		this.employerService = employerService;
 	}
 	
-	@GetMapping("/getall")
-	public DataResult<List<Employer>> getAll(){
-		return this.employerService.getAll();	}
-	
-	@PostMapping("/findbyemailis")
-	public DataResult<List<Employer>> findByEmailIs(@RequestBody String email) {
-		 return this.employerService.findByEmailIs(email.toLowerCase().trim());
+	@GetMapping("/getAll")
+	public DataResult<List<Employer>> getAll() {
+		return this.employerService.getAll();
 	}
-	
 	
 	@PostMapping("/add")
 	public Result add(@RequestBody Employer employer) {
 		return this.employerService.add(employer);
 	}
+
 	
 	
 	
