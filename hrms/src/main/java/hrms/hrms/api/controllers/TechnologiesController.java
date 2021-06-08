@@ -20,28 +20,20 @@ import hrms.hrms.entities.dtos.TechnologyDto;
 @RestController
 @RequestMapping("/api/technologies")
 public class TechnologiesController {
-	
-	
-		private final TechnologyService technologyService;
+    private final TechnologyService technologyService;
 
-		
-		@Autowired
-		public TechnologiesController(TechnologyService technologyService) {
-			super();
-			this.technologyService = technologyService;
-		}
-		
-		
-		@GetMapping("/getall")
-		public DataResult<List<Technology>> getAll(){
-			return this.technologyService.getAll();
-			}
-		
-		
-		@PostMapping("/add")
-		public Result add(@Valid @RequestBody TechnologyDto technologyDto ) {
-			return this.technologyService.add(technologyDto);
-		}
-		
-		
+    @Autowired
+    public TechnologiesController(TechnologyService technologyService) {
+        this.technologyService = technologyService;
+    }
+
+    @GetMapping("/getall")
+    public DataResult<List<Technology>> getAll(){
+        return this.technologyService.getAll();
+    }
+
+    @PostMapping("/add")
+    public Result add(@Valid @RequestBody TechnologyDto technologyDto){
+        return this.technologyService.add(technologyDto);
+    }
 }

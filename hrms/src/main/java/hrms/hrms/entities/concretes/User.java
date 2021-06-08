@@ -6,7 +6,6 @@ import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 
-@PrimaryKeyJoinColumn(name="id")
 @Data
 @Entity
 @NoArgsConstructor

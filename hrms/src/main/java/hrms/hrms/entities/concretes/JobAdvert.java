@@ -13,13 +13,15 @@ import javax.persistence.Table;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 @Data
 @Entity
+@Table(name = "job_adverts")
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "job_adverts")
+@EqualsAndHashCode(callSuper = false)
 public class JobAdvert {
 
     @Id

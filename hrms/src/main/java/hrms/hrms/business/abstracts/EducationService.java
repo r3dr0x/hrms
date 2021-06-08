@@ -9,7 +9,6 @@ import hrms.hrms.entities.concretes.Education;
 import hrms.hrms.entities.dtos.EducationDto;
 
 public interface EducationService {
-
     DataResult<List<Education>> getAll();
     Result add(EducationDto educationDto);
 }
