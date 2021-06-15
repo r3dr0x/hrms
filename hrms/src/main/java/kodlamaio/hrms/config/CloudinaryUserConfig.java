@@ -10,8 +10,8 @@ public class CloudinaryUserConfig {
     @Bean(name = {"getCloudinaryUser", "Cloudinary"})
     public Cloudinary getCloudinaryUser(){
         return new Cloudinary(ObjectUtils.asMap(
-                "cloud_name", "szrr",
-                "api_key", "245554566573417",
-                "api_secret", "1HekDSlJ1D0UilIScmg7RAkcKEY"));
+                "cloud_name", "di31ntvmx",
+                "api_key", "114893189263926",
+                "api_secret", "tytQRRil1oZ9dCDybXEPmYuGvls"));
     }
 }
